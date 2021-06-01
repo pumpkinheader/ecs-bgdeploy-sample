@@ -1,0 +1,30 @@
+{
+    "executionRoleArn": "arn:aws:iam::619278543031:role/EcsSampleStack-DevSandboxSampleTaskDefinitionExecu-1JZAHU0K45DB",
+    "containerDefinitions": [
+        {
+            "name": "ecs-deploy-test-nginx",
+            "image": "<IMAGE1_NAME>",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "512",
+    "family": "deploy-nginx",
+    "tags": [
+        {
+            "key": "Service",
+            "value": "ecs-deploy-test"
+        }
+    ]
+}
