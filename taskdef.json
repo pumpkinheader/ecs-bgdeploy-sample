@@ -20,7 +20,7 @@
     "networkMode": "awsvpc",
     "cpu": "256",
     "memory": "512",
-    "family": "deploy-nginx",
+    "family": "codedeploy-sample-nginx",
     "tags": [
         {
             "key": "Service",
