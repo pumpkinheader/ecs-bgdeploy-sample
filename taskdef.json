@@ -2,7 +2,7 @@
     "executionRoleArn": "arn:aws:iam::619278543031:role/EcsSampleStack-DevSandboxSampleTaskDefinitionExecu-1JZAHU0K45DB",
     "containerDefinitions": [
         {
-            "name": "ecs-deploy-test-nginx",
+            "name": "codedeploy-sample-nginx",
             "image": "<IMAGE1_NAME>",
             "portMappings": [
                 {

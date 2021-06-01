@@ -5,5 +5,5 @@ Resources:
       Properties:
         TaskDefinition: "<TASK_DEFINITION>"
         LoadBalancerInfo:
-          ContainerName: "ecs-deploy-test-nginx"
+          ContainerName: "codedeploy-sample-nginx"
           ContainerPort: 80
