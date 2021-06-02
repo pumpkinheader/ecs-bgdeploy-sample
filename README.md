@@ -1,2 +1,1 @@
 # ecs-bgdeploy-sample
-## Sample
