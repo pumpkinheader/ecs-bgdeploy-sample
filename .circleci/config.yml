@@ -5,7 +5,10 @@ orbs:
 workflows:
   build-and-deploy:
     jobs:
-      - test
+      - test:
+          steps:
+            - name: テストの実施
+            - run: echo 'ダミーテスト実行'
       - aws-ecr/build_and_push_image:
           context:
             - dev-sandbox
