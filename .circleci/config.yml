@@ -23,7 +23,7 @@ workflows:
   build-and-deploy:
     jobs:
       - build-and-test
-      - aws-ecr/build_and_push_image:
+      - aws-ecr/build-and-push-image:
           context:
             - dev-sandbox
           requires:
