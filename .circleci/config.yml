@@ -1,19 +1,33 @@
 version: 2.1
+executors:
+  node:
+    docker:
+      - image: circleci/node:12
+
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
   aws-ecs: circleci/aws-ecs@2.2.1
+
+jobs:
+  build-and-test:
+    executor: node
+    steps:
+      - checkout
+      - run: echo 'Cacheの復元'
+      - run: echo 'npm install'
+      - run: echo 'Cacheの保存'
+      - run: echo 'ダミーテスト実行'
+      - run: echo 'テスト結果の保存'
+
 workflows:
   build-and-deploy:
     jobs:
-      - test:
-          steps:
-            - name: テストの実施
-            - run: echo 'ダミーテスト実行'
+      - build-and-test
       - aws-ecr/build_and_push_image:
           context:
             - dev-sandbox
           requires:
-            - test
+            - build-and-test
           account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
           repo: "dev-sandbox-ecstest-repo"
           region: ${AWS_DEFAULT_REGION}
