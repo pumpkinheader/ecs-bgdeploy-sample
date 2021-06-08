@@ -55,12 +55,12 @@ workflows:
       #         only:
       #           - main
       - aws-ecs/deploy-service-update:
-          executor: aws-cli/default
           context:
             - dev-sandbox
           requires:
             - aws-ecr/build-and-push-image
           pre-steps:
+            - aws-cli/install:
             - aws-cli/setup:
             - run:
                 command: |
