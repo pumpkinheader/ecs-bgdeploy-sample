@@ -40,12 +40,14 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           family: "codedeploy-sample-nginx"
-          service-name: "codedeploy-sample-service"
-          cluster-name: "DevSandboxSampleCluster"
+          # service-name: "codedeploy-sample-service"
+          # cluster-name: "DevSandboxSampleCluster"
+          deployment-controller: CODE_DEPLOY
           codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
           codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
           codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
           codedeploy-load-balanced-container-port: 80
+          verify-revision-is-deployed: true
           container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
           filters:
             branches:
