@@ -34,22 +34,60 @@ workflows:
             branches:
               only:
                 - main
+      # - aws-ecs/deploy-service-update:
+      #     context:
+      #       - dev-sandbox
+      #     requires:
+      #       - aws-ecr/build-and-push-image
+      #     family: "codedeploy-sample-nginx"
+      #     # service-name: "codedeploy-sample-service"
+      #     cluster-name: "DevSandboxSampleCluster"
+      #     deployment-controller: CODE_DEPLOY
+      #     codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
+      #     codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
+      #     codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
+      #     codedeploy-load-balanced-container-port: 80
+      #     verify-revision-is-deployed: true
+      #     container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
       - aws-ecs/deploy-service-update:
           context:
             - dev-sandbox
           requires:
             - aws-ecr/build-and-push-image
-          family: "codedeploy-sample-nginx"
-          # service-name: "codedeploy-sample-service"
+          pre-steps:
+            - run:
+                command: >-
+                  testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
+                  testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+                  nextTargetService=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount==\`0\` && length(loadBalancers[?targetGroupArn==\`${testListenertargetArn}\`])==\`1\`)].serviceName" --output text)
+                  echo "export SERVICE_NAME='${nextTargetService}'" >> "$BASH_ENV"
+          service-name: ${SERVICE_NAME}
           cluster-name: "DevSandboxSampleCluster"
-          deployment-controller: CODE_DEPLOY
-          codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
-          codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
-          codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
-          codedeploy-load-balanced-container-port: 80
+          family: "deploy-nginx"
+          container-image-name-updates: "container=ecs-deploy-test-nginx,tag=${CIRCLE_SHA1}"
           verify-revision-is-deployed: true
-          container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
           filters:
             branches:
               only:
                 - main
+          post-steps:
+            - run:
+                command: >-
+                  mainListener=arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/8ae7ab65123c72c4
+                  mainListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${mainListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+                  testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
+                  testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+                  aws elbv2 modify-listener --listener-arn ${mainListener} --default-actions Type=forward,TargetGroupArn=${testListenertargetArn}
+                  aws elbv2 modify-listener --listener-arn ${testListener} --default-actions Type=forward,TargetGroupArn=${mainListenertargetArn}
+
+            - run:
+                command: >-
+                  testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
+                  testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+                  currentService=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount==\`0\` && length(loadBalancers[?targetGroupArn==\`${testListenertargetArn}\`])==\`1\`)].serviceName" --output text)
+                  aws ecs update-service --cluster DevSandboxSampleCluster --service ${currentService} --desired-count 0
+                  aws ecs wait services-stable --cluster DevSandboxSampleCluster --services ${currentService}
