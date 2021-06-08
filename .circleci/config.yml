@@ -38,7 +38,7 @@ workflows:
           context:
             - dev-sandbox
           requires:
-            - build-staging
+            - aws-ecr/build-and-push-image
           family: "codedeploy-sample-nginx"
           service-name: "codedeploy-sample-service"
           cluster-name: "DevSandboxSampleCluster"
