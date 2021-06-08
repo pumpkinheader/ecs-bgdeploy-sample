@@ -33,7 +33,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - aws-ecs/deploy-service-update:
           context:
             - dev-sandbox
@@ -46,4 +46,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
