@@ -7,6 +7,7 @@ executors:
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
   aws-ecs: circleci/aws-ecs@2.2.1
+  aws-cli: circleci/aws-cli@2.0.2
 
 jobs:
   build-and-test:
@@ -59,6 +60,8 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           pre-steps:
+            - aws-cli/install
+            - aws-cli/setup
             - run:
                 command: >-
                   testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
