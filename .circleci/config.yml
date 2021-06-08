@@ -41,7 +41,7 @@ workflows:
             - aws-ecr/build-and-push-image
           family: "codedeploy-sample-nginx"
           # service-name: "codedeploy-sample-service"
-          # cluster-name: "DevSandboxSampleCluster"
+          cluster-name: "DevSandboxSampleCluster"
           deployment-controller: CODE_DEPLOY
           codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
           codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
