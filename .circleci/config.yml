@@ -63,7 +63,7 @@ workflows:
             - aws-cli/install
             - aws-cli/setup
             - run:
-                command: >-
+                command: |
                   testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
                   testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
                   nextTargetService=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount==\`0\` && length(loadBalancers[?targetGroupArn==\`${testListenertargetArn}\`])==\`1\`)].serviceName" --output text)
@@ -79,7 +79,7 @@ workflows:
                 - main
           post-steps:
             - run:
-                command: >-
+                command: |
                   mainListener=arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/8ae7ab65123c72c4
                   mainListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${mainListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
                   testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
@@ -88,7 +88,7 @@ workflows:
                   aws elbv2 modify-listener --listener-arn ${testListener} --default-actions Type=forward,TargetGroupArn=${mainListenertargetArn}
 
             - run:
-                command: >-
+                command: |
                   testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
                   testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
                   currentService=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount==\`0\` && length(loadBalancers[?targetGroupArn==\`${testListenertargetArn}\`])==\`1\`)].serviceName" --output text)
