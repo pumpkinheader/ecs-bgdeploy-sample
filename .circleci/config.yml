@@ -55,13 +55,13 @@ workflows:
       #         only:
       #           - main
       - aws-ecs/deploy-service-update:
+          executor: aws-cli/default
           context:
             - dev-sandbox
           requires:
             - aws-ecr/build-and-push-image
           pre-steps:
-            - aws-cli/install
-            - aws-cli/setup
+            - aws-cli/setup:
             - run:
                 command: |
                   testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
