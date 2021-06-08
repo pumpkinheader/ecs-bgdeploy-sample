@@ -28,9 +28,7 @@ workflows:
             - dev-sandbox
           requires:
             - build-and-test
-          account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
           repo: "dev-sandbox-ecstest-repo"
-          region: ${AWS_DEFAULT_REGION}
           tag: "${CIRCLE_SHA1}"
           filters:
             branches:
