@@ -45,7 +45,7 @@ workflows:
           codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
           codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
           codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
-          codedeploy-load-balanced-container-port: "80"
+          codedeploy-load-balanced-container-port: 80
           container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
           filters:
             branches:
