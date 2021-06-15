@@ -46,7 +46,7 @@ jobs:
             echo "export DESIRED_CAPACITY='${desiredCapacity}'" >> "$BASH_ENV"
       - run:
           command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${CURRENT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
-      - update-service:
+      - aws-ecs/update-service:
           service-name: ${NEXT_SERVICE_NAME}
           cluster-name: "DevSandboxSampleCluster"
           family: "deploy-nginx"
