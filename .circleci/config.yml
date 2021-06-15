@@ -102,7 +102,7 @@ jobs:
       - run:
           command: |
             aws elbv2 modify-listener --listener-arn ${MAIN_LISTENER_ARN} --default-actions Type=forward,TargetGroupArn=${TEST_LISTENER_TARGET_ARN}
-            aws elbv2 modify-listener --listener-arn ${TEST_L344ISTENER_ARN} --default-actions Type=forward,TargetGroupArn=${MAIN_LISTENER_TARGET_ARN}
+            aws elbv2 modify-listener --listener-arn ${TEST_LISTENER_ARN} --default-actions Type=forward,TargetGroupArn=${MAIN_LISTENER_TARGET_ARN}
       - run:
           command: |
             aws ecs update-service --cluster DevSandboxSampleCluster --service ${CURRENT_SERVICE_NAME} --desired-count 0
