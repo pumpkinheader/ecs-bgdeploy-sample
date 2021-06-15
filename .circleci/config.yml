@@ -20,7 +20,7 @@ jobs:
       - run: echo 'ダミーテスト実行'
       - run: echo 'テスト結果の保存'
   sample-aws-job:
-    executor: aws-cli
+    executor: aws-cli/default
     steps:
       - aws-cli/setup
 
