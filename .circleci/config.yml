@@ -19,48 +19,54 @@ jobs:
       - run: echo 'Cacheの保存'
       - run: echo 'ダミーテスト実行'
       - run: echo 'テスト結果の保存'
+  sample-aws-job:
+    executor: aws-cli
+    steps:
+      - aws-cli/setup
 
 workflows:
   build-and-deploy:
     jobs:
       - build-and-test
-      - aws-ecr/build-and-push-image:
-          context:
-            - dev-sandbox
-          requires:
-            - build-and-test
-          repo: "dev-sandbox-ecstest-repo"
-          tag: "${CIRCLE_SHA1}"
-          filters:
-            branches:
-              only:
-                - main
-      - aws-ecs/deploy-service-update:
-          context:
-            - dev-sandbox
-          requires:
-            - aws-ecr/build-and-push-image
-          family: "codedeploy-sample-nginx"
-          # service-name: "codedeploy-sample-service"
-          cluster-name: "DevSandboxSampleCluster"
-          deployment-controller: CODE_DEPLOY
-          codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
-          codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
-          codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
-          codedeploy-load-balanced-container-port: 80
-          verify-revision-is-deployed: true
-          container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
-          filters:
-            branches:
-              only:
-                - main
+      # - aws-ecr/build-and-push-image:
+      #     context:
+      #       - dev-sandbox
+      #     requires:
+      #       - build-and-test
+      #     repo: "dev-sandbox-ecstest-repo"
+      #     tag: "${CIRCLE_SHA1}"
+      #     filters:
+      # branches:
+      #   only:
+      #     - circleci-plan4
+      # - aws-ecs/deploy-service-update:
+      #     context:
+      #       - dev-sandbox
+      #     requires:
+      #       - aws-ecr/build-and-push-image
+      #     family: "codedeploy-sample-nginx"
+      #     # service-name: "codedeploy-sample-service"
+      #     cluster-name: "DevSandboxSampleCluster"
+      #     deployment-controller: CODE_DEPLOY
+      #     codedeploy-application-name: "AppECS-DevSandboxSampleCluster-codedeploy-sample-service"
+      #     codedeploy-deployment-group-name: "DgpECS-DevSandboxSampleCluster-codedeploy-sample-service"
+      #     codedeploy-load-balanced-container-name: "codedeploy-sample-nginx"
+      #     codedeploy-load-balanced-container-port: 80
+      #     verify-revision-is-deployed: true
+      #     container-image-name-updates: "container=codedeploy-sample-nginx,tag=${CIRCLE_SHA1}"
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
       #####
       # PLAN4の検証
       # 1. aws-ecsのupdate-service前後にpre-stepsを挟む方式
       #     - aws-cliがorbの実行時に入るので、別途入れる必要がある。が、orbsをpre-stepsに適用できそうにないため却下
       # 2. すべて aws-cliで書くのが結果早そうである
       #
-      #####
+      ####
+      - sample-aws-job:
+          context: dev-sandbox
       # - aws-ecs/deploy-service-update:
       #     context:
       #       - dev-sandbox
@@ -96,7 +102,7 @@ workflows:
       #     filters:
       #       branches:
       #         only:
-      #           - main
+      #           - circleci-plan4
       #     post-steps:
       #       - run:
       #           command: |
