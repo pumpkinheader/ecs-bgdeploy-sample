@@ -41,9 +41,18 @@ jobs:
             echo "export CURRENT_SERVICE_NAME='${nextTargetService}'" >> $BASH_ENV
             echo "export NEXT_SERVICE_NAME='${nextTargetService}'" >> $BASH_ENV
             echo "export DESIRED_CAPACITY='${desiredCapacity}'" >> $BASH_ENV
-            echo $BASH_ENV
+            echo ${BASH_ENV}
       - run:
-          command: echo "over run step env -> "$BASH_ENV
+          command: |
+            echo "over run step env -> "${MAIN_LISTENER_ARN}
+            echo "over run step env -> "${TEST_LISTENER_ARN}
+            echo "over run step env -> "${MAIN_LISTENER_TARGET_ARN}
+            echo "over run step env -> "${TEST_LISTENER_TARGET_ARN}
+            echo "over run step env -> "${CURRENT_SERVICE_NAME}
+            echo "over run step env -> "${NEXT_SERVICE_NAME}
+            echo "over run step env -> "${DESIRED_CAPACITY}
+            echo "over run step env -> "${BASH_ENV}
+
   bgdeploy:
     executor: aws-cli/default
     steps:
