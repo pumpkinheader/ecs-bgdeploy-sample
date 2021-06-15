@@ -58,6 +58,7 @@ jobs:
     steps:
       - aws-cli/install
       - aws-cli/setup
+      - checkout
       - run:
           command: |
             testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
@@ -86,6 +87,12 @@ jobs:
             echo "over run step env -> "${DESIRED_CAPACITY}
       - run:
           command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${NEXT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
+
+      - run:
+          command: |
+            echo ${AWS_ECR_ACCOUNT_URL}\/ecs-deploy-test-nginx:${CIRCLE_SHA1}
+            sed -i -e s/\<WEB_IMAGE_NAME\>/${AWS_ECR_ACCOUNT_URL}\/ecs-deploy-test-nginx:${CIRCLE_SHA1}/ taskdef.json
+            cat taskdef.json
       - aws-ecs/update-service:
           service-name: ${NEXT_SERVICE_NAME}
           cluster-name: "DevSandboxSampleCluster"
