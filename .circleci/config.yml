@@ -85,7 +85,7 @@ jobs:
             echo "over run step env -> "${NEXT_SERVICE_NAME}
             echo "over run step env -> "${DESIRED_CAPACITY}
       - run:
-          command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${CURRENT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
+          command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${NEXT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
       - aws-ecs/update-service:
           service-name: ${NEXT_SERVICE_NAME}
           cluster-name: "DevSandboxSampleCluster"
@@ -105,29 +105,26 @@ workflows:
   build-and-deploy:
     jobs:
       - build-and-test
+      - aws-ecr/build-and-push-image:
+          context:
+            - dev-sandbox
+          requires:
+            - build-and-test
+          repo: "dev-sandbox-ecstest-repo"
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only:
+                - circleci-plan4
       - bgdeploy:
           context:
             - dev-sandbox
-      # - aws-ecr/build-and-push-image:
-      #     context:
-      #       - dev-sandbox
-      #     requires:
-      #       - build-and-test
-      #     repo: "dev-sandbox-ecstest-repo"
-      #     tag: "${CIRCLE_SHA1}"
-      #     filters:
-      #       branches:
-      #         only:
-      #           - circleci-plan4
-      # - bgdeploy:
-      #     context:
-      #       - dev-sandbox
-      #     requires:
-      #       - aws-ecr/build-and-push-image
-      #     filters:
-      #       branches:
-      #         only:
-      #           - circleci-plan4
+          requires:
+            - aws-ecr/build-and-push-image
+          filters:
+            branches:
+              only:
+                - circleci-plan4
       # - aws-ecs/deploy-service-update:
       #     context:
       #       - dev-sandbox
