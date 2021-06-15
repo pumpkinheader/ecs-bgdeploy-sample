@@ -87,7 +87,9 @@ workflows:
   build-and-deploy:
     jobs:
       - build-and-test
-      - sample-aws-job
+      - sample-aws-job:
+          context:
+            - dev-sandbox
       # - aws-ecr/build-and-push-image:
       #     context:
       #       - dev-sandbox
