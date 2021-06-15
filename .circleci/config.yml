@@ -23,22 +23,59 @@ jobs:
     executor: aws-cli/default
     steps:
       - aws-cli/setup
+  bgdeploy:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup
+      - run:
+          command: |
+            testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
+            mainListener=arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/8ae7ab65123c72c4
+            testListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${testListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+            mainListenertargetArn=$(aws elbv2 describe-listeners --listener-arn ${mainListener} --query "Listeners[].DefaultActions[].TargetGroupArn" --output text)
+            currentServiceInfo=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount!=\`0\` && length(loadBalancers[?targetGroupArn==\`${mainListenertargetArn}\`])==\`1\`)].[serviceName,desiredCount]" --output text)
+            currentService=$(echo ${currentServiceInfo} | cut -d ' ' -f1)
+            desiredCapacity=$(echo ${currentServiceInfo} | cut -d ' ' -f2)
+            nextTargetService=$(aws ecs describe-services --cluster DevSandboxSampleCluster --services DevSandBoxSampleService8080 DevSandBoxSampleService8080-2 --query "services[?(length(deployments)==\`1\` && runningCount==desiredCount && desiredCount==\`0\` && length(loadBalancers[?targetGroupArn==\`${testListenertargetArn}\`])==\`1\`)].serviceName" --output text)
+            echo "export MAIN_LISTENER_ARN='${mainListener}'" >> "$BASH_ENV"
+            echo "export TEST_LISTENER_ARN='${testListener}'" >> "$BASH_ENV"
+            echo "export MAIN_LISTENER_TARGET_ARN='${mainListenertargetArn}'" >> "$BASH_ENV"
+            echo "export TEST_LISTENER_TARGET_ARN='${testListenertargetArn}'" >> "$BASH_ENV"
+            echo "export CURRENT_SERVICE_NAME='${nextTargetService}'" >> "$BASH_ENV"
+            echo "export NEXT_SERVICE_NAME='${nextTargetService}'" >> "$BASH_ENV"
+            echo "export DESIRED_CAPACITY='${desiredCapacity}'" >> "$BASH_ENV"
+      - run:
+          command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${CURRENT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
+      - update-service:
+          service-name: ${NEXT_SERVICE_NAME}
+          cluster-name: "DevSandboxSampleCluster"
+          family: "deploy-nginx"
+          container-image-name-updates: "container=ecs-deploy-test-nginx,tag=${CIRCLE_SHA1}"
+          verify-revision-is-deployed: true
+      - run:
+          command: |
+            aws elbv2 modify-listener --listener-arn ${MAIN_LISTENER_ARN} --default-actions Type=forward,TargetGroupArn=${TEST_LISTENER_TARGET_ARN}
+            aws elbv2 modify-listener --listener-arn ${TEST_LISTENER_ARN} --default-actions Type=forward,TargetGroupArn=${MAIN_LISTENER_TARGET_ARN}
+      - run:
+          command: |
+            aws ecs update-service --cluster DevSandboxSampleCluster --service ${CURRENT_SERVICE_NAME} --desired-count 0
+            aws ecs wait services-stable --cluster DevSandboxSampleCluster --services ${CURRENT_SERVICE_NAME}
 
 workflows:
   build-and-deploy:
     jobs:
       - build-and-test
-      # - aws-ecr/build-and-push-image:
-      #     context:
-      #       - dev-sandbox
-      #     requires:
-      #       - build-and-test
-      #     repo: "dev-sandbox-ecstest-repo"
-      #     tag: "${CIRCLE_SHA1}"
-      #     filters:
-      # branches:
-      #   only:
-      #     - circleci-plan4
+      - aws-ecr/build-and-push-image:
+          context:
+            - dev-sandbox
+          requires:
+            - build-and-test
+          repo: "dev-sandbox-ecstest-repo"
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only:
+                - circleci-plan4
       # - aws-ecs/deploy-service-update:
       #     context:
       #       - dev-sandbox
@@ -65,8 +102,13 @@ workflows:
       # 2. すべて aws-cliで書くのが結果早そうである
       #
       ####
-      - sample-aws-job:
-          context: dev-sandbox
+      - bgdeploy:
+          context:
+            - dev-sandbox
+          filters:
+            branches:
+              only:
+                - circleci-plan4
       # - aws-ecs/deploy-service-update:
       #     context:
       #       - dev-sandbox
