@@ -89,7 +89,7 @@ jobs:
       - run:
           command: |
             echo ${AWS_ECR_ACCOUNT_URL}\/ecs-deploy-test-nginx:${CIRCLE_SHA1}
-            sed -i -e 's/\<WEB_IMAGE_NAME\>/${AWS_ECR_ACCOUNT_URL}\/ecs-deploy-test-nginx:${CIRCLE_SHA1}/' taskdef.json
+            sed -i -e 's/\<IMAGE1_NAME\>/${AWS_ECR_ACCOUNT_URL}\/ecs-deploy-test-nginx:${CIRCLE_SHA1}/' taskdef.json
             cat taskdef.json
       - run:
           command: aws ecs update-service --cluster DevSandboxSampleCluster --service ${NEXT_SERVICE_NAME} --desired-count ${DESIRED_CAPACITY}
