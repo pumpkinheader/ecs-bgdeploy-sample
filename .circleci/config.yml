@@ -55,10 +55,11 @@ jobs:
 
   bgdeploy:
     executor: aws-cli/default
+    working_directory: ~/project_root
     steps:
+      - checkout
       - aws-cli/install
       - aws-cli/setup
-      - checkout
       - run:
           command: |
             testListener="arn:aws:elasticloadbalancing:ap-northeast-1:619278543031:listener/app/DevSandBoxManualBG/3b3dea0f8f9f1050/6f7886056a6980d9"
